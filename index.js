@@ -2,7 +2,6 @@ const http = require("node:http");
 const fs = require("node:fs");
 const { formidable } = require("formidable"); // formidable v3 用 named import
 
-require("dotenv").config();
 
 // ========== 任務一：讀取上傳設定 ==========
 /**
