@@ -2,7 +2,6 @@ const http = require("node:http");
 const fs = require("node:fs");
 const { formidable } = require("formidable"); // formidable v3 用 named import
 
-
 // ========== 任務一：讀取上傳設定 ==========
 /**
  * 從 process.env 讀取上傳相關設定，回傳設定物件。
@@ -131,7 +130,7 @@ function formatUploadLog(meta, config) {
   const { filename, sizeKB } = meta;
   const { uploadDir, gymName } = config;
 
-  return `[${gymName}}] Uploaded ${filename}(${sizeKB}} KB) →${uploadDir}}`;
+  return `[${gymName}] Uploaded ${filename}(${sizeKB} KB) →${uploadDir}`;
 }
 
 // ========== 任務五：路由分派 ==========
