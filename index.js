@@ -130,7 +130,7 @@ function formatUploadLog(meta, config) {
   const { filename, sizeKB } = meta;
   const { uploadDir, gymName } = config;
 
-  return `[${gymName}] Uploaded ${filename}(${sizeKB} KB) →${uploadDir}`;
+  return `[${gymName}] Uploaded ${filename}(${sizeKB} KB) → ${uploadDir}`;
 }
 
 // ========== 任務五：路由分派 ==========
@@ -172,45 +172,65 @@ function router(req, res, config) {
   //     });
 
   if (req.url === "/coaches/avatar" && req.method === "POST") {
-    const { uploadDir, maxFileSize } = config;
-
-    const form = formidable({
-      uploadDir,
-      maxFileSize,
-      keepExtensions: true,
-    });
-
-    form.on("error", (err) => {
-      console.log(err);
-    });
-
-    form.parse(req, (error, fields, files) => {
-      if (error) {
-        res.writeHead(500, { "content-type": "application/json" });
-        res.end(JSON.stringify({ error }));
-        return;
-      }
-
-      const file = files.file?.[0];
-
-      if (!file) {
-        res.writeHead(400, { "content-type": "application/json" });
-        res.end(JSON.stringify({ error: "No file uploaded" }));
-        return;
-      }
-
-      const responseMessage = {
-        ...parseFileMetadata(file),
-        savedPath: file.filepath,
-      };
-      res.writeHead(200, { "content-type": "application/json" });
-      res.end(JSON.stringify(responseMessage));
-    });
-    return;
+    return handleUpload(req, res, config);
   }
 
-  res.writeHead(404, { "content-type": "application/json" });
-  res.end(JSON.stringify({ error: "Not Found" }));
+  return handleNotFound(res);
+}
+function handleUpload(req, res, config) {
+  const { uploadDir, maxFileSize } = config;
+
+  const form = formidable({
+    uploadDir,
+    maxFileSize,
+    keepExtensions: true,
+  });
+
+  form.on("error", (err) => {
+    console.log(err);
+  });
+
+  form.parse(req, (error, fields, files) => {
+    if (error) {
+      console.log(error);
+
+      return sendResponse(res, {
+        statusCode: 500,
+        body: { error: error || "Upload failed" },
+      });
+    }
+
+    const file = files.file?.[0];
+
+    if (!file) {
+      return sendResponse(res, {
+        statusCode: 400,
+        body: { error: "No file uploaded" },
+      });
+    }
+
+    const responseMessage = {
+      ...parseFileMetadata(file),
+      savedPath: file.filepath,
+    };
+
+    return sendResponse(res, {
+      statusCode: 200,
+      body: responseMessage,
+    });
+  });
+}
+
+function handleNotFound(res) {
+  return sendResponse(res, { statusCode: 404, body: { error: "Not Found" } });
+}
+
+function sendResponse(
+  res,
+  { statusCode = 400, contentType = "application/json", body = {} },
+) {
+  res.writeHead(statusCode, { "content-type": contentType });
+  res.end(JSON.stringify(body));
 }
 
 // ========== 任務六：建立上傳 server ==========
