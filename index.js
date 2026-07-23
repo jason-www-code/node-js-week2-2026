@@ -252,7 +252,7 @@ function sendResponse(
 function createUploadServer(config) {
   // TODO: 實作此函式
   // 提示：主邏輯都在 router 裡，這邊函式內容不多
-  if (!config.uploadDir)
+  if (!fs.existsSync(config.uploadDir))
     return fs.mkdirSync(config.uploadDir, { recursive: true });
 
   const server = http.createServer((request, response) =>
